@@ -14,14 +14,10 @@ body{
 header{
   background:#000;
   color:#fff;
-  padding:15px 20px;
+  padding:15px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-}
-header h1{
-  margin:0;
-  font-size:22px;
 }
 header a{
   color:#fff;
@@ -54,13 +50,10 @@ h2{
   object-fit:cover;
   border-radius:10px;
 }
-.producto p{
-  margin:6px 0;
-}
-input[type="number"]{
-  width:70px;
+.producto input{
+  margin-top:10px;
   padding:5px;
-  margin-top:5px;
+  width:70px;
 }
 .btn{
   background:#000;
@@ -71,8 +64,6 @@ input[type="number"]{
   cursor:pointer;
   margin-top:10px;
 }
-
-/* CARRITO */
 #carrito{
   position:fixed;
   right:20px;
@@ -82,9 +73,6 @@ input[type="number"]{
   padding:15px;
   box-shadow:0 2px 10px rgba(0,0,0,.3);
   border-radius:10px;
-}
-#carrito h3{
-  margin-top:0;
 }
 #carrito ul{
   list-style:none;
@@ -96,15 +84,7 @@ input[type="number"]{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:6px;
-  font-size:14px;
-}
-#carrito button{
-  background:red;
-  border:none;
-  color:#fff;
-  cursor:pointer;
-  border-radius:4px;
+  margin-bottom:5px;
 }
 </style>
 </head>
@@ -115,9 +95,7 @@ input[type="number"]{
   <h1>Artur Shop</h1>
   <nav>
     <a target="_blank" href="catalogo.html">Catálogo</a>
-    <a target="_blank" href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20una%20cotización">
-      Contacto
-    </a>
+    <a target="_blank" href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20una%20cotización">Contacto</a>
   </nav>
 </header>
 
@@ -143,10 +121,10 @@ fetch(sheetURL)
   const filas = text.split("\n").slice(1);
   let html = "";
 
-  filas.forEach((fila, i)=>{
-    if(!fila.trim()) return;
+  filas.forEach((fila, i) => {
+    if (!fila.trim()) return;
 
-    const [nombre,precio,imagen,tallas,stock] = fila.split(",");
+    const [nombre, precio, imagen, tallas, stock] = fila.split(",");
 
     html += `
       <div class="producto">
@@ -156,10 +134,7 @@ fetch(sheetURL)
         <p>📏 Tallas: ${tallas}</p>
         <p>📦 Stock disponible: <strong>${stock}</strong></p>
 
-        <input type="number" min="1" max="${stock}" value="1"
-          id="qty-${i}">
-
-        <br>
+        <input type="number" min="1" max="${stock}" value="1" id="qty-${i}">
 
         <button class="btn" onclick="
           agregarAlCarrito(
@@ -195,7 +170,7 @@ function renderCarrito(){
   lista.innerHTML = "";
   let total = 0;
 
-  carrito.forEach((item, i)=>{
+  carrito.forEach((item, i) => {
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
 
@@ -221,3 +196,22 @@ function enviarPedido(){
     alert("Tu carrito está vacío");
     return;
   }
+
+  let msg = "Hola, quiero hacer este pedido:%0A";
+
+  carrito.forEach(p=>{
+    msg += `- ${p.nombre} x${p.cantidad} ($${p.precio})%0A`;
+  });
+
+  const total = carrito.reduce((s,p)=>s + (p.precio * p.cantidad), 0);
+  msg += `%0ATotal: $${total} MXN`;
+
+  window.open(
+    `https://wa.me/525548438403?text=${msg}`,
+    "_blank"
+  );
+}
+</script>
+
+</body>
+</html>
