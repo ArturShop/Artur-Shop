@@ -106,7 +106,7 @@ h2{text-align:center;margin:30px 0;}
 <div id="carrito">
   <h3>🛒 Carrito</h3>
   <ul id="listaCarrito"></ul>
-  <p><strong>Total: $<span id="total">0</span> MXN</strong></p>
+  <p><strong>Total: $<span id="total">0.00</span> MXN</strong></p>
   <button class="btn" onclick="enviarPedido()">Finalizar pedido</button>
 </div>
 
@@ -121,30 +121,32 @@ fetch(sheetURL)
   const filas = text.split("\n").slice(1);
   let html = "";
 
-  filas.forEach((fila, i) => {
+  filas.forEach(fila => {
     if (!fila.trim()) return;
 
-    const [nombre, precio, imagen, tallas, stockRaw] = fila.split(",");
-    const stock = Number(stockRaw);
-    const sinStock = stock === 0;
+    let [nombre, precio, imagen, tallas, stockRaw] = fila.split(",");
+
+    // LIMPIEZA DE DATOS
+    let precioNumero = Number(precio.replace(/[^0-9.]/g,"").trim());
+    let stock = Number(stockRaw.replace(/\r/g,"").trim());
+
+    let sinStock = stock === 0;
 
     html += `
       <div class="producto">
         <img src="${imagen}">
         <h3>${nombre}</h3>
-        <p><strong>$${precio} MXN</strong></p>
+        <p><strong>$${precioNumero.toFixed(2)} MXN</strong></p>
         <p>📏 Tallas: ${tallas}</p>
         ${
           sinStock
           ? `<p style="color:red;font-weight:bold;">❌ Sin stock</p>`
           : `<p>📦 Stock disponible: <strong>${stock}</strong></p>`
         }
-
         <input type="number" min="1" max="${stock}" value="1" ${sinStock ? "disabled" : ""}>
-
         <button class="btn agregar"
           data-nombre="${nombre}"
-          data-precio="${precio}"
+          data-precio="${precioNumero}"
           ${sinStock ? "disabled" : ""}
         >
           Añadir al carrito
@@ -170,7 +172,6 @@ fetch(sheetURL)
 
 function agregarAlCarrito(nombre, precio, cantidad){
   if(!cantidad || cantidad <= 0) return;
-
   carrito.push({ nombre, precio, cantidad });
   renderCarrito();
 }
@@ -184,16 +185,17 @@ function renderCarrito(){
   carrito.forEach((item,i)=>{
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
+
     lista.innerHTML += `
       <li>
         ${item.nombre} x${item.cantidad}
-        $${subtotal}
+        $${subtotal.toFixed(2)}
         <button onclick="eliminar(${i})">❌</button>
       </li>
     `;
   });
 
-  totalSpan.textContent = total;
+  totalSpan.textContent = total.toFixed(2);
 }
 
 function eliminar(i){
@@ -212,7 +214,7 @@ function enviarPedido(){
     msg += `- ${p.nombre} x${p.cantidad} ($${p.precio})%0A`;
   });
 
-  msg += `%0ATotal: $${carrito.reduce((s,p)=>s+p.precio*p.cantidad,0)} MXN`;
+  msg += `%0ATotal: $${carrito.reduce((s,p)=>s+p.precio*p.cantidad,0).toFixed(2)} MXN`;
 
   window.open(`https://wa.me/525548438403?text=${msg}`,"_blank");
 }
