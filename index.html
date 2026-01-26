@@ -49,7 +49,7 @@ h2{text-align:center;margin:30px 0;}
 }
 .producto select,
 .producto input{
-  margin-top:10px;
+  margin-top:8px;
   padding:6px;
   width:90%;
 }
@@ -121,7 +121,7 @@ fetch(sheetURL)
   filas.forEach(fila => {
     if (!fila.trim()) return;
 
-    let [nombre, precio, imagen, tallas, stockRaw] = fila.split(",");
+    let [nombre, precio, imagen, tallas, colores, stockRaw] = fila.split(",");
     let precioNumero = Number(precio.replace(/[^0-9.]/g,"").trim());
     let stock = Number(stockRaw.replace(/\r/g,"").trim());
     let sinStock = stock === 0;
@@ -131,20 +131,33 @@ fetch(sheetURL)
       opcionesTalla += `<option value="${t.trim()}">${t.trim()}</option>`;
     });
 
+    let opcionesColor = '<option value="">Selecciona color</option>';
+    colores.split("-").forEach(c => {
+      opcionesColor += `<option value="${c.trim()}">${c.trim()}</option>`;
+    });
+
     html += `
       <div class="producto">
         <img src="${imagen}">
         <h3>${nombre}</h3>
         <p><strong>$${precioNumero.toFixed(2)} MXN</strong></p>
+
         <select class="talla" ${sinStock ? "disabled" : ""}>
           ${opcionesTalla}
         </select>
+
+        <select class="color" ${sinStock ? "disabled" : ""}>
+          ${opcionesColor}
+        </select>
+
         ${
           sinStock
           ? `<p style="color:red;font-weight:bold;">❌ Sin stock</p>`
           : `<p>📦 Stock disponible: <strong>${stock}</strong></p>`
         }
+
         <input type="number" min="1" max="${stock}" value="1" ${sinStock ? "disabled" : ""}>
+
         <button class="btn agregar"
           data-nombre="${nombre}"
           data-precio="${precioNumero}"
@@ -162,10 +175,15 @@ fetch(sheetURL)
     btn.addEventListener("click", e=>{
       const card = e.target.closest(".producto");
       const talla = card.querySelector(".talla").value;
+      const color = card.querySelector(".color").value;
       const cantidad = Number(card.querySelector("input").value);
 
       if(!talla){
-        alert("Por favor selecciona una talla");
+        alert("Selecciona una talla");
+        return;
+      }
+      if(!color){
+        alert("Selecciona un color");
         return;
       }
 
@@ -173,14 +191,15 @@ fetch(sheetURL)
         e.target.dataset.nombre,
         Number(e.target.dataset.precio),
         talla,
+        color,
         cantidad
       );
     });
   });
 });
 
-function agregarAlCarrito(nombre, precio, talla, cantidad){
-  carrito.push({ nombre, precio, talla, cantidad });
+function agregarAlCarrito(nombre, precio, talla, color, cantidad){
+  carrito.push({ nombre, precio, talla, color, cantidad });
   renderCarrito();
 }
 
@@ -193,11 +212,12 @@ function renderCarrito(){
   carrito.forEach((item,i)=>{
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
+
     lista.innerHTML += `
       <li>
         ${item.nombre}<br>
-        Talla: ${item.talla} | Cantidad: ${item.cantidad}<br>
-        $${subtotal.toFixed(2)}
+        Talla: ${item.talla} | Color: ${item.color}<br>
+        Cantidad: ${item.cantidad} – $${subtotal.toFixed(2)}
         <button onclick="eliminar(${i})">❌</button>
       </li>
     `;
@@ -219,7 +239,7 @@ function enviarPedido(){
 
   let msg = "Hola, quiero hacer este pedido:%0A";
   carrito.forEach(p=>{
-    msg += `- ${p.nombre} | Talla ${p.talla} | x${p.cantidad} ($${p.precio})%0A`;
+    msg += `- ${p.nombre} | Talla ${p.talla} | Color ${p.color} | x${p.cantidad} ($${p.precio})%0A`;
   });
 
   msg += `%0ATotal: $${carrito.reduce((s,p)=>s+p.precio*p.cantidad,0).toFixed(2)} MXN`;
