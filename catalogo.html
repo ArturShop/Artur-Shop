@@ -59,16 +59,20 @@ fetch(sheetURL)
   const filas = text.split("\n").slice(1);
   let html = "";
 
-  filas.forEach(fila=>{
-    if(!fila.trim()) return;
-    const [nombre,precio,imagen,tallas] = fila.split(",");
+  filas.forEach(fila => {
+    if (!fila.trim()) return;
+
+    const [nombre, precio, imagen, tallas, stock] = fila.split(",");
+
     html += `
       <div class="producto">
         <img src="${imagen}">
         <h3>${nombre}</h3>
         <p><strong>$${precio} MXN</strong></p>
         <p>📏 Tallas: ${tallas}</p>
-      </div>`;
+        <p>📦 Stock disponible: <strong>${stock}</strong></p>
+      </div>
+    `;
   });
 
   document.getElementById("catalogo").innerHTML = html;
