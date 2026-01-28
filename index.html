@@ -30,25 +30,13 @@ body{
   gap:12px;
 }
 
-.logo img{
-  height:50px;
-}
-
-.logo span{
-  font-size:22px;
-  letter-spacing:3px;
-  font-weight:600;
-}
+.logo img{height:50px}
+.logo span{font-size:22px;letter-spacing:3px;font-weight:600}
 
 nav a{
   color:#fff;
   text-decoration:none;
   margin-left:20px;
-  font-weight:500;
-}
-
-nav a:hover{
-  text-decoration:underline;
 }
 
 /* CATÁLOGO */
@@ -64,13 +52,7 @@ nav a:hover{
   padding:18px;
   border-radius:12px;
   text-align:center;
-  box-shadow:0 8px 20px rgba(0,0,0,0.08);
-  transition:transform .2s, box-shadow .2s;
-}
-
-.producto:hover{
-  transform:translateY(-5px);
-  box-shadow:0 12px 25px rgba(0,0,0,0.15);
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
 
 .producto img{
@@ -80,43 +62,25 @@ nav a:hover{
   border-radius:10px;
 }
 
-.producto h3{
-  margin:12px 0 6px;
-}
-
-.producto p{
-  margin:5px 0;
-  font-weight:600;
-}
-
-/* FORM */
-select,input{
+select,input,button{
   width:100%;
   padding:8px;
   margin-top:8px;
   border-radius:6px;
-  border:1px solid #ccc;
 }
 
 button{
-  width:100%;
   background:#000;
   color:#fff;
   border:none;
-  padding:12px;
-  margin-top:12px;
-  border-radius:8px;
   cursor:pointer;
-  font-size:14px;
 }
 
-button:hover:not(:disabled){
-  background:#222;
-}
+button:disabled{background:#999}
 
-button:disabled{
-  background:#999;
-  cursor:not-allowed;
+.sin-stock{
+  color:red;
+  font-weight:600;
 }
 
 /* CARRITO */
@@ -128,17 +92,10 @@ button:disabled{
   background:#fff;
   padding:18px;
   border-radius:15px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
 
-#carrito h3{
-  margin-top:0;
-}
-
-#lista li{
-  font-size:14px;
-  margin-bottom:6px;
-}
+#lista li{font-size:14px;margin-bottom:5px}
 </style>
 </head>
 
@@ -146,13 +103,12 @@ button:disabled{
 
 <header class="header">
   <div class="logo">
-    <img src="images/logo.png" alt="Artur Shop">
+    <img src="images/logo.png">
     <span>ARTUR SHOP</span>
   </div>
-
   <nav>
-    <a target="_blank" href="catalogo.html">Catálogo</a>
-    <a target="_blank" href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20una%20cotización">Contacto</a>
+    <a href="catalogo.html" target="_blank">Catálogo</a>
+    <a href="https://wa.me/525548438403" target="_blank">Contacto</a>
   </nav>
 </header>
 
@@ -161,121 +117,116 @@ button:disabled{
 <div id="carrito">
   <h3>🛒 Carrito</h3>
   <ul id="lista"></ul>
+
   <p><strong>Total:</strong> $<span id="total">0</span></p>
+
+  <!-- FORMA DE ENTREGA -->
+  <select id="entrega">
+    <option value="">Selecciona forma de entrega</option>
+    <option>Envío a domicilio</option>
+    <option>Entrega en punto medio</option>
+    <option>Entrega en estación Línea 2</option>
+  </select>
+
   <button onclick="enviar()">Finalizar pedido</button>
 </div>
 
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQCWkxVJTImAd3wDy4Ls_ErsI-RbFyU3YZmZVthPrb2pIO8w41wOWqKMeZ-KJfNPLnDi5pafXFOfd65/pub?gid=0&single=true&output=csv";
-let data = {};
-let carrito = [];
+const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQCWkxVJTImAd3wDy4Ls_ErsI-RbFyU3YZmZVthPrb2pIO8w41wOWqKMeZ-KJfNPLnDi5pafXFOfd65/pub?gid=0&single=true&output=csv";
+let data={}, carrito=JSON.parse(localStorage.getItem("carritoArturShop"))||[];
 
-fetch(sheetURL)
-.then(r=>r.text())
-.then(csv=>{
+fetch(sheetURL).then(r=>r.text()).then(csv=>{
   csv.split("\n").slice(1).forEach(row=>{
-    let cols = row.match(/(".*?"|[^",]+)(?=,|$)/g);
-    if(!cols) return;
-
-    let [nombre,precio,img,talla,color,stock] = cols.map(c=>c.replace(/"/g,""));
-
-    precio = Number(precio.replace(/[^0-9.]/g,""));
-    stock = Number(stock);
-
-    if(!data[nombre]){
-      data[nombre]={precio,img,items:[]};
-    }
-
-    data[nombre].items.push({talla,color,stock});
+    const c=row.match(/(".*?"|[^",]+)(?=,|$)/g);
+    if(!c)return;
+    let [n,p,i,t,col,s]=c.map(x=>x.replace(/"/g,""));
+    p=Number(p.replace(/[^0-9.]/g,""));
+    s=Number(s);
+    if(!data[n]) data[n]={precio:p,img:i,items:[]};
+    data[n].items.push({talla:t,color:col,stock:s});
   });
-
   renderProductos();
+  renderCarrito();
 });
 
 function renderProductos(){
-  const cont = document.getElementById("catalogo");
+  const cont=document.getElementById("catalogo");
   cont.innerHTML="";
-
-  Object.keys(data).forEach(nombre=>{
-    const p = data[nombre];
-    const tallas = [...new Set(p.items.map(i=>i.talla))];
-
+  Object.keys(data).forEach(n=>{
+    const p=data[n];
+    const tallas=[...new Set(p.items.map(i=>i.talla))];
     cont.innerHTML+=`
     <div class="producto">
       <img src="${p.img}">
-      <h3>${nombre}</h3>
+      <h3>${n}</h3>
       <p>$${p.precio}</p>
-
-      <select onchange="cargarColores(this,'${nombre}')">
+      <select onchange="cargarColores(this,'${n}')">
         <option value="">Selecciona talla</option>
         ${tallas.map(t=>`<option>${t}</option>`).join("")}
       </select>
-
       <select disabled></select>
       <input type="number" min="1" value="1" disabled>
-      <button disabled onclick="add(this,'${nombre}')">Añadir</button>
+      <p class="sin-stock" style="display:none">Sin stock disponible</p>
+      <button disabled onclick="add(this,'${n}')">Añadir</button>
     </div>`;
   });
 }
 
-function cargarColores(sel,nombre){
-  const card = sel.parentElement;
-  const colorSel = card.querySelectorAll("select")[1];
-  const btn = card.querySelector("button");
-  const qty = card.querySelector("input");
-
-  colorSel.innerHTML='<option value="">Selecciona color</option>';
-  qty.disabled=true;
-  btn.disabled=true;
-
-  data[nombre].items
-    .filter(i=>i.talla===sel.value && i.stock>0)
-    .forEach(i=>{
-      colorSel.innerHTML+=`<option data-stock="${i.stock}">${i.color}</option>`;
-    });
-
-  colorSel.disabled=false;
-
-  colorSel.onchange=()=>{
-    const opt = colorSel.selectedOptions[0];
-    if(!opt)return;
-    const stock = Number(opt.dataset.stock);
-    qty.max=stock;
+function cargarColores(sel,n){
+  const c=sel.parentElement;
+  const color=c.querySelectorAll("select")[1];
+  const qty=c.querySelector("input");
+  const btn=c.querySelector("button");
+  const aviso=c.querySelector(".sin-stock");
+  aviso.style.display="none";
+  color.innerHTML="<option>Selecciona color</option>";
+  qty.disabled=btn.disabled=true;
+  const disp=data[n].items.filter(i=>i.talla===sel.value && i.stock>0);
+  if(!disp.length){aviso.style.display="block";color.disabled=true;return;}
+  disp.forEach(i=>color.innerHTML+=`<option data-stock="${i.stock}">${i.color}</option>`);
+  color.disabled=false;
+  color.onchange=()=>{
+    qty.max=color.selectedOptions[0].dataset.stock;
     qty.value=1;
-    qty.disabled=false;
-    btn.disabled=false;
+    qty.disabled=btn.disabled=false;
   }
 }
 
-function add(btn,nombre){
-  const card = btn.parentElement;
-  const talla = card.querySelectorAll("select")[0].value;
-  const color = card.querySelectorAll("select")[1].value;
-  const qty = Number(card.querySelector("input").value);
-
-  carrito.push({nombre,talla,color,qty,precio:data[nombre].precio});
+function add(btn,n){
+  const c=btn.parentElement;
+  carrito.push({
+    nombre:n,
+    talla:c.querySelectorAll("select")[0].value,
+    color:c.querySelectorAll("select")[1].value,
+    qty:Number(c.querySelector("input").value),
+    precio:data[n].precio
+  });
   renderCarrito();
 }
 
 function renderCarrito(){
-  let total=0;
+  let t=0;
   document.getElementById("lista").innerHTML=carrito.map((p,i)=>{
-    total+=p.precio*p.qty;
+    t+=p.precio*p.qty;
     return `<li>${p.nombre} ${p.talla} ${p.color} x${p.qty} <button onclick="del(${i})">❌</button></li>`;
   }).join("");
-  document.getElementById("total").textContent=total;
+  document.getElementById("total").textContent=t;
+  localStorage.setItem("carritoArturShop",JSON.stringify(carrito));
 }
 
-function del(i){
-  carrito.splice(i,1);
-  renderCarrito();
-}
+function del(i){carrito.splice(i,1);renderCarrito();}
 
 function enviar(){
-  let msg="Pedido:%0A";
+  const entrega=document.getElementById("entrega").value;
+  if(!entrega){alert("Selecciona la forma de entrega");return;}
+
+  let total=document.getElementById("total").textContent;
+  let msg="🛒 *Pedido Artur Shop*%0A";
   carrito.forEach(p=>{
-    msg+=`${p.nombre} ${p.talla} ${p.color} x${p.qty}%0A`;
+    msg+=`• ${p.nombre} | ${p.talla} | ${p.color} x${p.qty}%0A`;
   });
+  msg+=`%0A*Forma de entrega:* ${entrega}%0A`;
+  msg+=`*Total:* $${total}`;
   window.open("https://wa.me/525548438403?text="+msg,"_blank");
 }
 </script>
