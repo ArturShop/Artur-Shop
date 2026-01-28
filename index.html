@@ -1,128 +1,119 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Artur Shop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Artur Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- FUENTE -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
 
-  <style>
-    body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:#f5f5f5;
-    }
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f4f4;
+}
 
-    header{
-      background:#000;
-      color:#fff;
-      padding:15px 20px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
+header{
+  background:#000;
+  color:#fff;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 
-    .logo{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
-    .logo img{
-      height:50px;
-    }
+.logo img{
+  height:50px;
+}
 
-    .logo span{
-      font-family:'Poppins', sans-serif;
-      font-size:22px;
-      letter-spacing:3px;
-      font-weight:600;
-    }
+.logo span{
+  font-family:'Poppins', sans-serif;
+  font-size:22px;
+  letter-spacing:3px;
+}
 
-    nav a{
-      color:#fff;
-      text-decoration:none;
-      margin-left:20px;
-      font-weight:bold;
-    }
+nav a{
+  color:#fff;
+  text-decoration:none;
+  margin-left:20px;
+  font-weight:bold;
+}
 
-    nav a:hover{
-      text-decoration:underline;
-    }
+main{
+  padding:20px;
+}
 
-    main{
-      padding:20px;
-    }
+.productos{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+}
 
-    h2{
-      text-align:center;
-      margin-bottom:20px;
-    }
+.producto{
+  background:#fff;
+  padding:15px;
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
 
-    .productos{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:20px;
-    }
+.producto img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+  border-radius:6px;
+}
 
-    .producto{
-      background:#fff;
-      padding:15px;
-      border-radius:8px;
-      text-align:center;
-      box-shadow:0 2px 5px rgba(0,0,0,0.1);
-    }
+select, input{
+  width:100%;
+  padding:6px;
+  margin:6px 0;
+}
 
-    .producto img{
-      width:100%;
-      height:180px;
-      object-fit:cover;
-      border-radius:6px;
-    }
+button{
+  width:100%;
+  padding:10px;
+  background:#000;
+  color:#fff;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
 
-    .producto h3{
-      margin:10px 0 5px;
-    }
+button:disabled{
+  background:#aaa;
+}
 
-    .producto p{
-      margin:5px 0;
-      font-weight:bold;
-    }
+#carrito{
+  margin-top:30px;
+  background:#fff;
+  padding:15px;
+  border-radius:8px;
+}
 
-    .producto button{
-      background:#000;
-      color:#fff;
-      border:none;
-      padding:10px;
-      width:100%;
-      cursor:pointer;
-      border-radius:5px;
-    }
-
-    .producto button:hover{
-      background:#333;
-    }
-
-    footer{
-      background:#000;
-      color:#fff;
-      text-align:center;
-      padding:15px;
-      margin-top:30px;
-    }
-  </style>
+footer{
+  background:#000;
+  color:#fff;
+  text-align:center;
+  padding:15px;
+  margin-top:30px;
+}
+</style>
 </head>
 
 <body>
 
 <header>
   <div class="logo">
-    <img src="images/logo.png" alt="Artur Shop">
+    <img src="images/logo.png">
     <span>ARTUR SHOP</span>
   </div>
-
   <nav>
     <a href="catalogo.html" target="_blank">Catálogo</a>
     <a href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20cotización" target="_blank">Contacto</a>
@@ -130,28 +121,117 @@
 </header>
 
 <main>
-  <h2>Más vendidos</h2>
+<h2>Más vendidos</h2>
 
-  <div class="productos">
-    <div class="producto">
-      <img src="images/sandalia1.jpg" alt="Sandalia 1">
-      <h3>Sandalia Casual</h3>
-      <p>$399 MXN</p>
-      <button>Añadir al carrito</button>
-    </div>
+<div class="productos" id="productos"></div>
 
-    <div class="producto">
-      <img src="images/sandalia2.jpg" alt="Sandalia 2">
-      <h3>Sandalia Elegante</h3>
-      <p>$449 MXN</p>
-      <button>Añadir al carrito</button>
-    </div>
-  </div>
+<div id="carrito">
+<h3>🛒 Carrito</h3>
+<ul id="listaCarrito"></ul>
+<p><strong>Total:</strong> $<span id="total">0</span></p>
+</div>
 </main>
 
 <footer>
-  © 2026 Artur Shop · Todos los derechos reservados
+© 2026 Artur Shop
 </footer>
+
+<script>
+const productos = [
+  {
+    nombre:"Sandalia Casual",
+    precio:399,
+    imagen:"images/sandalia1.jpg",
+    stock:{
+      "22|Negro":3,
+      "23|Negro":0,
+      "24|Blanco":5
+    }
+  },
+  {
+    nombre:"Sandalia Elegante",
+    precio:449,
+    imagen:"images/sandalia2.jpg",
+    stock:{
+      "23|Negro":2,
+      "24|Café":1
+    }
+  }
+];
+
+let carrito = [];
+
+function cargarProductos(){
+  const contenedor = document.getElementById("productos");
+  contenedor.innerHTML="";
+
+  productos.forEach((p,index)=>{
+    contenedor.innerHTML += `
+    <div class="producto">
+      <img src="${p.imagen}">
+      <h3>${p.nombre}</h3>
+      <p>$${p.precio}</p>
+
+      <select id="talla${index}">
+        <option value="">Talla</option>
+        ${[...new Set(Object.keys(p.stock).map(s=>s.split("|")[0]))].map(t=>`<option>${t}</option>`).join("")}
+      </select>
+
+      <select id="color${index}">
+        <option value="">Color</option>
+        ${[...new Set(Object.keys(p.stock).map(s=>s.split("|")[1]))].map(c=>`<option>${c}</option>`).join("")}
+      </select>
+
+      <input type="number" min="1" value="1" id="cantidad${index}">
+
+      <button id="btn${index}" onclick="agregar(${index})">Agregar al carrito</button>
+    </div>
+    `;
+  });
+}
+
+function agregar(i){
+  const talla = document.getElementById(`talla${i}`).value;
+  const color = document.getElementById(`color${i}`).value;
+  const cantidad = parseInt(document.getElementById(`cantidad${i}`).value);
+  const clave = `${talla}|${color}`;
+
+  if(!talla || !color){
+    alert("Selecciona talla y color");
+    return;
+  }
+
+  if(!productos[i].stock[clave] || productos[i].stock[clave] < cantidad){
+    alert("No hay stock disponible");
+    return;
+  }
+
+  carrito.push({
+    nombre:productos[i].nombre,
+    precio:productos[i].precio,
+    talla,
+    color,
+    cantidad
+  });
+
+  mostrarCarrito();
+}
+
+function mostrarCarrito(){
+  const lista = document.getElementById("listaCarrito");
+  let total = 0;
+  lista.innerHTML="";
+
+  carrito.forEach(p=>{
+    total += p.precio * p.cantidad;
+    lista.innerHTML += `<li>${p.nombre} | ${p.talla} | ${p.color} x${p.cantidad}</li>`;
+  });
+
+  document.getElementById("total").textContent = total;
+}
+
+cargarProductos();
+</script>
 
 </body>
 </html>
