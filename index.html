@@ -4,233 +4,144 @@
 <meta charset="UTF-8">
 <title>Artur Shop</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
-
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f4f4f4;
-}
-
-header{
-  background:#000;
-  color:#fff;
-  padding:15px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.logo{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.logo img{
-  height:50px;
-}
-
-.logo span{
-  font-family:'Poppins', sans-serif;
-  font-size:22px;
-  letter-spacing:3px;
-}
-
-nav a{
-  color:#fff;
-  text-decoration:none;
-  margin-left:20px;
-  font-weight:bold;
-}
-
-main{
-  padding:20px;
-}
-
-.productos{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:20px;
-}
-
-.producto{
-  background:#fff;
-  padding:15px;
-  border-radius:8px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-.producto img{
-  width:100%;
-  height:200px;
-  object-fit:cover;
-  border-radius:6px;
-}
-
-select, input{
-  width:100%;
-  padding:6px;
-  margin:6px 0;
-}
-
-button{
-  width:100%;
-  padding:10px;
-  background:#000;
-  color:#fff;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-}
-
-button:disabled{
-  background:#aaa;
-}
-
-#carrito{
-  margin-top:30px;
-  background:#fff;
-  padding:15px;
-  border-radius:8px;
-}
-
-footer{
-  background:#000;
-  color:#fff;
-  text-align:center;
-  padding:15px;
-  margin-top:30px;
-}
+body{margin:0;font-family:Arial;background:#f5f5f5}
+header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between}
+header a{color:#fff;margin-left:15px;text-decoration:none;font-weight:bold}
+#catalogo{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;padding:20px}
+.producto{background:#fff;padding:15px;border-radius:10px;text-align:center}
+.producto img{width:100%;height:220px;object-fit:cover;border-radius:10px}
+select,input{width:90%;padding:6px;margin-top:8px}
+button{background:#000;color:#fff;border:none;padding:10px;margin-top:10px;border-radius:5px;cursor:pointer}
+button:disabled{opacity:.5}
+#carrito{position:fixed;right:20px;bottom:20px;width:320px;background:#fff;padding:15px;border-radius:10px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="logo">
-    <img src="images/logo.png">
-    <span>ARTUR SHOP</span>
-  </div>
-  <nav>
-    <a href="catalogo.html" target="_blank">Catálogo</a>
-    <a href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20cotización" target="_blank">Contacto</a>
-  </nav>
+<h2>Artur Shop</h2>
+<nav>
+<a target="_blank" href="catalogo.html">Catálogo</a>
+<a target="_blank" href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20una%20cotización">Contacto</a>
+</nav>
 </header>
 
-<main>
-<h2>Más vendidos</h2>
-
-<div class="productos" id="productos"></div>
+<div id="catalogo"></div>
 
 <div id="carrito">
 <h3>🛒 Carrito</h3>
-<ul id="listaCarrito"></ul>
-<p><strong>Total:</strong> $<span id="total">0</span></p>
+<ul id="lista"></ul>
+<p>Total: $<span id="total">0</span></p>
+<button onclick="enviar()">Finalizar pedido</button>
 </div>
-</main>
-
-<footer>
-© 2026 Artur Shop
-</footer>
 
 <script>
-const productos = [
-  {
-    nombre:"Sandalia Casual",
-    precio:399,
-    imagen:"images/sandalia1.jpg",
-    stock:{
-      "22|Negro":3,
-      "23|Negro":0,
-      "24|Blanco":5
-    }
-  },
-  {
-    nombre:"Sandalia Elegante",
-    precio:449,
-    imagen:"images/sandalia2.jpg",
-    stock:{
-      "23|Negro":2,
-      "24|Café":1
-    }
-  }
-];
-
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQCWkxVJTImAd3wDy4Ls_ErsI-RbFyU3YZmZVthPrb2pIO8w41wOWqKMeZ-KJfNPLnDi5pafXFOfd65/pub?gid=0&single=true&output=csv";
+let data = {};
 let carrito = [];
 
-function cargarProductos(){
-  const contenedor = document.getElementById("productos");
-  contenedor.innerHTML="";
+fetch(sheetURL)
+.then(r=>r.text())
+.then(csv=>{
+  csv.split("\n").slice(1).forEach(row=>{
+    let [nombre,precio,img,talla,color,stock] = row.split(",");
+    precio = Number(precio.replace(/[^0-9.]/g,""));
+    stock = Number(stock);
 
-  productos.forEach((p,index)=>{
-    contenedor.innerHTML += `
+    if(!data[nombre]){
+      data[nombre]={precio,img,items:[]};
+    }
+    data[nombre].items.push({talla,color,stock});
+  });
+
+  renderProductos();
+});
+
+function renderProductos(){
+  const cont = document.getElementById("catalogo");
+  cont.innerHTML="";
+
+  Object.keys(data).forEach(nombre=>{
+    const p = data[nombre];
+    const tallas = [...new Set(p.items.map(i=>i.talla))];
+
+    cont.innerHTML+=`
     <div class="producto">
-      <img src="${p.imagen}">
-      <h3>${p.nombre}</h3>
+      <img src="${p.img}">
+      <h3>${nombre}</h3>
       <p>$${p.precio}</p>
-
-      <select id="talla${index}">
-        <option value="">Talla</option>
-        ${[...new Set(Object.keys(p.stock).map(s=>s.split("|")[0]))].map(t=>`<option>${t}</option>`).join("")}
+      <select onchange="cargarColores(this,'${nombre}')">
+        <option value="">Selecciona talla</option>
+        ${tallas.map(t=>`<option>${t}</option>`).join("")}
       </select>
-
-      <select id="color${index}">
-        <option value="">Color</option>
-        ${[...new Set(Object.keys(p.stock).map(s=>s.split("|")[1]))].map(c=>`<option>${c}</option>`).join("")}
-      </select>
-
-      <input type="number" min="1" value="1" id="cantidad${index}">
-
-      <button id="btn${index}" onclick="agregar(${index})">Agregar al carrito</button>
-    </div>
-    `;
+      <select disabled></select>
+      <input type="number" min="1" value="1" disabled>
+      <button disabled onclick="add(this,'${nombre}')">Añadir</button>
+    </div>`;
   });
 }
 
-function agregar(i){
-  const talla = document.getElementById(`talla${i}`).value;
-  const color = document.getElementById(`color${i}`).value;
-  const cantidad = parseInt(document.getElementById(`cantidad${i}`).value);
-  const clave = `${talla}|${color}`;
+function cargarColores(sel,nombre){
+  const card = sel.parentElement;
+  const colorSel = card.querySelectorAll("select")[1];
+  const btn = card.querySelector("button");
+  const qty = card.querySelector("input");
 
-  if(!talla || !color){
-    alert("Selecciona talla y color");
-    return;
+  colorSel.innerHTML='<option value="">Selecciona color</option>';
+  qty.disabled=true;
+  btn.disabled=true;
+
+  data[nombre].items
+    .filter(i=>i.talla===sel.value && i.stock>0)
+    .forEach(i=>{
+      colorSel.innerHTML+=`<option data-stock="${i.stock}">${i.color}</option>`;
+    });
+
+  colorSel.disabled=false;
+
+  colorSel.onchange=()=>{
+    const opt = colorSel.selectedOptions[0];
+    if(!opt)return;
+    const stock = Number(opt.dataset.stock);
+    qty.max=stock;
+    qty.value=1;
+    qty.disabled=false;
+    btn.disabled=false;
   }
-
-  if(!productos[i].stock[clave] || productos[i].stock[clave] < cantidad){
-    alert("No hay stock disponible");
-    return;
-  }
-
-  carrito.push({
-    nombre:productos[i].nombre,
-    precio:productos[i].precio,
-    talla,
-    color,
-    cantidad
-  });
-
-  mostrarCarrito();
 }
 
-function mostrarCarrito(){
-  const lista = document.getElementById("listaCarrito");
-  let total = 0;
-  lista.innerHTML="";
+function add(btn,nombre){
+  const card = btn.parentElement;
+  const talla = card.querySelectorAll("select")[0].value;
+  const color = card.querySelectorAll("select")[1].value;
+  const qty = Number(card.querySelector("input").value);
+  carrito.push({nombre,talla,color,qty,precio:data[nombre].precio});
+  renderCarrito();
+}
 
+function renderCarrito(){
+  let total=0;
+  document.getElementById("lista").innerHTML=carrito.map((p,i)=>{
+    total+=p.precio*p.qty;
+    return `<li>${p.nombre} ${p.talla} ${p.color} x${p.qty} <button onclick="del(${i})">❌</button></li>`;
+  }).join("");
+  document.getElementById("total").textContent=total;
+}
+
+function del(i){
+  carrito.splice(i,1);
+  renderCarrito();
+}
+
+function enviar(){
+  let msg="Pedido:%0A";
   carrito.forEach(p=>{
-    total += p.precio * p.cantidad;
-    lista.innerHTML += `<li>${p.nombre} | ${p.talla} | ${p.color} x${p.cantidad}</li>`;
+    msg+=`${p.nombre} ${p.talla} ${p.color} x${p.qty}%0A`;
   });
-
-  document.getElementById("total").textContent = total;
+  window.open("https://wa.me/525548438403?text="+msg,"_blank");
 }
-
-cargarProductos();
 </script>
 
 </body>
