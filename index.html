@@ -4,37 +4,165 @@
 <meta charset="UTF-8">
 <title>Artur Shop</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+
 <style>
-body{margin:0;font-family:Arial;background:#f5f5f5}
-header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between}
-header a{color:#fff;margin-left:15px;text-decoration:none;font-weight:bold}
-#catalogo{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;padding:20px}
-.producto{background:#fff;padding:15px;border-radius:10px;text-align:center}
-.producto img{width:100%;height:220px;object-fit:cover;border-radius:10px}
-select,input{width:90%;padding:6px;margin-top:8px}
-button{background:#000;color:#fff;border:none;padding:10px;margin-top:10px;border-radius:5px;cursor:pointer}
-button:disabled{opacity:.5}
-#carrito{position:fixed;right:20px;bottom:20px;width:320px;background:#fff;padding:15px;border-radius:10px}
+body{
+  margin:0;
+  font-family:'Poppins', Arial, sans-serif;
+  background:#f2f2f2;
+}
+
+/* HEADER */
+.header{
+  background:#000;
+  color:#fff;
+  padding:15px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo img{
+  height:50px;
+}
+
+.logo span{
+  font-size:22px;
+  letter-spacing:3px;
+  font-weight:600;
+}
+
+nav a{
+  color:#fff;
+  text-decoration:none;
+  margin-left:20px;
+  font-weight:500;
+}
+
+nav a:hover{
+  text-decoration:underline;
+}
+
+/* CATÁLOGO */
+#catalogo{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:25px;
+  padding:30px;
+}
+
+.producto{
+  background:#fff;
+  padding:18px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 8px 20px rgba(0,0,0,0.08);
+  transition:transform .2s, box-shadow .2s;
+}
+
+.producto:hover{
+  transform:translateY(-5px);
+  box-shadow:0 12px 25px rgba(0,0,0,0.15);
+}
+
+.producto img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.producto h3{
+  margin:12px 0 6px;
+}
+
+.producto p{
+  margin:5px 0;
+  font-weight:600;
+}
+
+/* FORM */
+select,input{
+  width:100%;
+  padding:8px;
+  margin-top:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+button{
+  width:100%;
+  background:#000;
+  color:#fff;
+  border:none;
+  padding:12px;
+  margin-top:12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+button:hover:not(:disabled){
+  background:#222;
+}
+
+button:disabled{
+  background:#999;
+  cursor:not-allowed;
+}
+
+/* CARRITO */
+#carrito{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  width:320px;
+  background:#fff;
+  padding:18px;
+  border-radius:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+#carrito h3{
+  margin-top:0;
+}
+
+#lista li{
+  font-size:14px;
+  margin-bottom:6px;
+}
 </style>
 </head>
 
 <body>
 
-<header>
-<h2>Artur Shop</h2>
-<nav>
-<a target="_blank" href="catalogo.html">Catálogo</a>
-<a target="_blank" href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20una%20cotización">Contacto</a>
-</nav>
+<header class="header">
+  <div class="logo">
+    <img src="images/logo.png" alt="Artur Shop">
+    <span>ARTUR SHOP</span>
+  </div>
+
+  <nav>
+    <a target="_blank" href="catalogo.html">Catálogo</a>
+    <a target="_blank" href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20una%20cotización">Contacto</a>
+  </nav>
 </header>
 
 <div id="catalogo"></div>
 
 <div id="carrito">
-<h3>🛒 Carrito</h3>
-<ul id="lista"></ul>
-<p>Total: $<span id="total">0</span></p>
-<button onclick="enviar()">Finalizar pedido</button>
+  <h3>🛒 Carrito</h3>
+  <ul id="lista"></ul>
+  <p><strong>Total:</strong> $<span id="total">0</span></p>
+  <button onclick="enviar()">Finalizar pedido</button>
 </div>
 
 <script>
@@ -46,13 +174,18 @@ fetch(sheetURL)
 .then(r=>r.text())
 .then(csv=>{
   csv.split("\n").slice(1).forEach(row=>{
-    let [nombre,precio,img,talla,color,stock] = row.split(",");
+    let cols = row.match(/(".*?"|[^",]+)(?=,|$)/g);
+    if(!cols) return;
+
+    let [nombre,precio,img,talla,color,stock] = cols.map(c=>c.replace(/"/g,""));
+
     precio = Number(precio.replace(/[^0-9.]/g,""));
     stock = Number(stock);
 
     if(!data[nombre]){
       data[nombre]={precio,img,items:[]};
     }
+
     data[nombre].items.push({talla,color,stock});
   });
 
@@ -72,10 +205,12 @@ function renderProductos(){
       <img src="${p.img}">
       <h3>${nombre}</h3>
       <p>$${p.precio}</p>
+
       <select onchange="cargarColores(this,'${nombre}')">
         <option value="">Selecciona talla</option>
         ${tallas.map(t=>`<option>${t}</option>`).join("")}
       </select>
+
       <select disabled></select>
       <input type="number" min="1" value="1" disabled>
       <button disabled onclick="add(this,'${nombre}')">Añadir</button>
@@ -117,6 +252,7 @@ function add(btn,nombre){
   const talla = card.querySelectorAll("select")[0].value;
   const color = card.querySelectorAll("select")[1].value;
   const qty = Number(card.querySelector("input").value);
+
   carrito.push({nombre,talla,color,qty,precio:data[nombre].precio});
   renderCarrito();
 }
