@@ -8,23 +8,62 @@
 <style>
 body{margin:0;font-family:Arial;background:#f5f5f5}
 header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between;align-items:center}
-header img{height:40px}
+header img{height:45px}
 header a{color:#fff;margin-left:15px;text-decoration:none;font-weight:bold}
-#catalogo{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;padding:20px}
-.producto{background:#fff;padding:15px;border-radius:10px;text-align:center}
-.producto img{width:100%;height:220px;object-fit:cover;border-radius:10px}
-select,input{width:95%;padding:6px;margin-top:8px}
-button{background:#000;color:#fff;border:none;padding:10px;margin-top:10px;border-radius:5px;cursor:pointer}
+
+#catalogo{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
+  padding:20px
+}
+.producto{
+  background:#fff;
+  padding:15px;
+  border-radius:10px;
+  text-align:center
+}
+.producto img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:10px
+}
+select,input{
+  width:90%;
+  padding:7px;
+  margin-top:8px
+}
+button{
+  background:#000;
+  color:#fff;
+  border:none;
+  padding:10px;
+  margin-top:10px;
+  border-radius:5px;
+  cursor:pointer
+}
 button:disabled{opacity:.5;cursor:not-allowed}
-#carrito{position:fixed;right:20px;bottom:20px;width:320px;background:#fff;padding:15px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,.2)}
-#lista li{font-size:14px;margin-bottom:5px}
+
+#carrito{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  width:330px;
+  background:#fff;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,.2)
+}
+#carrito ul{padding-left:18px}
+#carrito li{margin-bottom:6px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <img src="images/logo.png" alt="Artur Shop">
+  <img src="images/logo.png">
   <nav>
     <a target="_blank" href="catalogo.html">Catálogo</a>
     <a target="_blank" href="https://wa.me/525548438403?text=Quisiera%20una%20atención%20personalizada%20y%20una%20cotización">Contacto</a>
@@ -34,126 +73,165 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div id="catalogo"></div>
 
 <div id="carrito">
-<h3>🛒 Carrito</h3>
-<ul id="lista"></ul>
-<p><strong>Total:</strong> $<span id="total">0</span></p>
+  <h3>🛒 Carrito</h3>
+  <ul id="lista"></ul>
+  <p><b>Total: $<span id="total">0</span></b></p>
 
-<select id="entrega">
-  <option value="">Selecciona forma de entrega</option>
-  <option>Envío a domicilio</option>
-  <option>Punto medio</option>
-  <option>Estación Línea 2</option>
-</select>
+  <select id="entrega">
+    <option value="">Selecciona forma de entrega</option>
+    <option>Envío a domicilio</option>
+    <option>Entrega personal</option>
+    <option>Recoger en tienda</option>
+  </select>
 
-<button onclick="finalizar()">Finalizar compra</button>
+  <button onclick="finalizar()">Finalizar compra</button>
 </div>
 
 <script>
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQCWkxVJTImAd3wDy4Ls_ErsI-RbFyU3YZmZVthPrb2pIO8w41wOWqKMeZ-KJfNPLnDi5pafXFOfd65/pub?gid=0&single=true&output=csv";
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwn0tIop2O_ACVr2zDn2JxstV2pRyA_6VNlj4OquwyDMqkK5f8VBw1tZbfAZz8zy66z/exec";
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQCWkxVJTImAd3wDy4Ls_ErsI-RbFyU3YZmZVthPrb2pIO8w41wOWqKMeZ-KJfNPLnDi5pafXFOfd65/pub?gid=0&single=true&output=csv";
 
 let productos = {};
 let carrito = [];
 
-fetch(SHEET_URL)
-.then(r=>r.text())
+fetch(sheetURL)
+.then(res=>res.text())
 .then(csv=>{
-  csv.split("\n").slice(1).forEach(row=>{
-    let [nombre,precio,imagen,talla,color,stock] = row.split(",");
-    precio = Number(precio);
-    stock = Number(stock);
+  const filas = csv.split("\n").slice(1);
+
+  filas.forEach(f=>{
+    let [nombre,precio,img,talla,color,stock] = f.split(",");
+    precio = parseFloat(precio);
+    stock = parseInt(stock);
 
     if(!productos[nombre]){
-      productos[nombre]={precio,imagen,variantes:[]};
+      productos[nombre] = {precio,img,variantes:[]};
     }
+
     productos[nombre].variantes.push({talla,color,stock});
   });
-  render();
+
+  renderCatalogo();
 });
 
-function render(){
-  const c=document.getElementById("catalogo");
-  c.innerHTML="";
-  Object.keys(productos).forEach(n=>{
-    let p=productos[n];
-    let tallas=[...new Set(p.variantes.map(v=>v.talla))];
-    c.innerHTML+=`
+function renderCatalogo(){
+  const cont = document.getElementById("catalogo");
+  cont.innerHTML="";
+
+  Object.keys(productos).forEach(nombre=>{
+    const p = productos[nombre];
+    const tallas = [...new Set(p.variantes.map(v=>v.talla))];
+
+    cont.innerHTML+=`
     <div class="producto">
-      <img src="${p.imagen}">
-      <h3>${n}</h3>
-      <p>$${p.precio}</p>
-      <select onchange="cargarColor(this,'${n}')">
-        <option value="">Talla</option>
+      <img src="${p.img}">
+      <h3>${nombre}</h3>
+      <p><b>$${p.precio}</b></p>
+
+      <select onchange="cargarColores(this,'${nombre}')">
+        <option value="">Selecciona talla</option>
         ${tallas.map(t=>`<option>${t}</option>`).join("")}
       </select>
+
       <select disabled></select>
-      <input type="number" value="1" min="1" disabled>
-      <button disabled onclick="agregar(this,'${n}')">Agregar</button>
+
+      <input type="number" min="1" value="1" disabled>
+
+      <button disabled onclick="agregar(this,'${nombre}')">Agregar</button>
     </div>`;
   });
 }
 
-function cargarColor(sel,n){
-  const card=sel.parentElement;
-  const colorSel=card.querySelectorAll("select")[1];
-  const qty=card.querySelector("input");
-  const btn=card.querySelector("button");
+function cargarColores(sel,nombre){
+  const card = sel.parentElement;
+  const colorSel = card.querySelectorAll("select")[1];
+  const qty = card.querySelector("input");
+  const btn = card.querySelector("button");
 
-  colorSel.innerHTML='<option value="">Color</option>';
-  btn.disabled=true;
+  colorSel.innerHTML='<option value="">Selecciona color</option>';
   qty.disabled=true;
+  btn.disabled=true;
 
-  productos[n].variantes.filter(v=>v.talla===sel.value && v.stock>0)
-  .forEach(v=>{
-    colorSel.innerHTML+=`<option data-stock="${v.stock}">${v.color}</option>`;
-  });
+  productos[nombre].variantes
+    .filter(v=>v.talla===sel.value && v.stock>0)
+    .forEach(v=>{
+      colorSel.innerHTML+=`<option data-stock="${v.stock}">${v.color}</option>`;
+    });
 
   colorSel.disabled=false;
+
   colorSel.onchange=()=>{
-    let stock=colorSel.selectedOptions[0].dataset.stock;
-    qty.max=stock;
-    qty.value=1;
+    const opt = colorSel.selectedOptions[0];
+    if(!opt)return;
+    qty.max = opt.dataset.stock;
+    qty.value = 1;
     qty.disabled=false;
     btn.disabled=false;
   }
 }
 
-function agregar(btn,n){
-  const card=btn.parentElement;
+function agregar(btn,nombre){
+  const card = btn.parentElement;
+  const talla = card.querySelectorAll("select")[0].value;
+  const color = card.querySelectorAll("select")[1].value;
+  const qty = parseInt(card.querySelector("input").value);
+
   carrito.push({
-    nombre:n,
-    talla:card.querySelectorAll("select")[0].value,
-    color:card.querySelectorAll("select")[1].value,
-    cantidad:Number(card.querySelector("input").value),
-    precio:productos[n].precio
+    nombre,
+    talla,
+    color,
+    qty,
+    precio: productos[nombre].precio
   });
-  pintarCarrito();
+
+  renderCarrito();
 }
 
-function pintarCarrito(){
+function renderCarrito(){
   let total=0;
-  document.getElementById("lista").innerHTML=carrito.map((p,i)=>{
-    total+=p.precio*p.cantidad;
-    return `<li>${p.nombre} ${p.talla} ${p.color} x${p.cantidad}</li>`;
-  }).join("");
-  document.getElementById("total").textContent=total;
+  const lista = document.getElementById("lista");
+  lista.innerHTML="";
+
+  carrito.forEach((p,i)=>{
+    total += p.precio * p.qty;
+    lista.innerHTML+=`
+      <li>
+        ${p.nombre} ${p.talla} ${p.color} x${p.qty}
+        <button onclick="eliminar(${i})">❌</button>
+      </li>`;
+  });
+
+  document.getElementById("total").textContent = total.toFixed(2);
+}
+
+function eliminar(i){
+  carrito.splice(i,1);
+  renderCarrito();
 }
 
 function finalizar(){
-  const entrega=document.getElementById("entrega").value;
-  if(!entrega){alert("Selecciona forma de entrega");return;}
+  if(carrito.length===0){
+    alert("El carrito está vacío");
+    return;
+  }
 
-  fetch(SCRIPT_URL,{
-    method:"POST",
-    body:JSON.stringify({carrito})
-  });
+  const entrega = document.getElementById("entrega").value;
+  if(!entrega){
+    alert("Selecciona forma de entrega");
+    return;
+  }
 
   let msg="Pedido:%0A";
   carrito.forEach(p=>{
-    msg+=`${p.nombre} ${p.talla} ${p.color} x${p.cantidad}%0A`;
+    msg+=`${p.nombre} ${p.talla} ${p.color} x${p.qty}%0A`;
   });
-  msg+=`Entrega: ${entrega}%0ATotal: $${document.getElementById("total").textContent}`;
+
+  msg+=`%0ATotal: $${document.getElementById("total").textContent}`;
+  msg+=`%0AEntrega: ${entrega}`;
+
   window.open("https://wa.me/525548438403?text="+msg,"_blank");
+
+  carrito=[];
+  renderCarrito();
 }
 </script>
 
