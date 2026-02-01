@@ -2,11 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Artur Shop</title>
+<title>Pargam Shoes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{margin:0;font-family:Arial;background:#f5f5f5}
+body{margin:0;font-family:Arial;background:#98DB3D}
 header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between;align-items:center}
 header img{height:45px}
 header a{color:#fff;margin-left:15px;text-decoration:none;font-weight:bold}
@@ -209,41 +209,9 @@ function eliminar(i){
 }
 
 function finalizar(){
-  if(carrito.length === 0){
+  if(carrito.length===0){
     alert("El carrito está vacío");
     return;
-  }
-
-  const entrega = document.getElementById("entrega").value;
-  if(!entrega){
-    alert("Selecciona la forma de entrega");
-    return;
-  }
-
-  // 🔥 AQUÍ SE MANDA EL CARRITO AL APP SCRIPT
-  fetch("https://script.google.com/macros/s/AKfycbwn0tIop2O_ACVr2zDn2JxstV2pRyA_6VNlj4OquwyDMqkK5f8VBw1tZbfAZz8zy66z/exec", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(carrito)
-  });
-
-  // 📲 MENSAJE DE WHATSAPP
-  let msg = "🛒 Pedido Artur Shop%0A";
-  carrito.forEach(p=>{
-    msg += `${p.nombre} ${p.talla} ${p.color} x${p.qty}%0A`;
-  });
-
-  msg += `%0AEntrega: ${entrega}`;
-  msg += `%0ATotal: $${document.getElementById("total").textContent}`;
-
-  window.open("https://wa.me/525548438403?text=" + msg, "_blank");
-
-  // 🧹 LIMPIA EL CARRITO
-  carrito = [];
-  renderCarrito();
-}
   }
 
   const entrega = document.getElementById("entrega").value;
@@ -269,4 +237,3 @@ function finalizar(){
 
 </body>
 </html>
-
